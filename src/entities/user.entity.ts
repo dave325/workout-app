@@ -9,4 +9,6 @@ export class User extends BaseEntity {
   weight?: number;
   @Property({ nullable: true })
   height?: number;
+  @Property({ hidden: true })
+  password!: string;
 }

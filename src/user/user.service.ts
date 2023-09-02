@@ -3,7 +3,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
-
+import { hash } from 'bcrypt';
 @Injectable()
 export default class UserService {
   constructor(
@@ -13,8 +13,11 @@ export default class UserService {
   ) {}
 
   findUserByID(id: number) {
-    console.log('here');
-    return this.em.findOne(User, id);
+    return this.userRepository.findOne(id);
+  }
+
+  findUserByEmail(email: string) {
+    return this.userRepository.findOne({ email, deletedOn: null });
   }
 
   async createUser(user: Omit<User, 'createdAt' | 'updatedAt'>) {
@@ -24,7 +27,11 @@ export default class UserService {
     if (existingUser) {
       return { error: 'User already exists' };
     }
-    const createdUserResponse = await this.userRepository.create(user);
+    const password = await hash(user.password, 15);
+    const createdUserResponse = await this.userRepository.create({
+      ...user,
+      password,
+    });
     await this.em.flush();
     return createdUserResponse;
   }

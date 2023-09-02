@@ -6,10 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import WorkoutService from './workout.service';
 import { Workout } from 'src/entities/workout.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('workout')
 export default class WorkoutController {
   constructor(private readonly workoutService: WorkoutService) {}
