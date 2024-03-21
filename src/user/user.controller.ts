@@ -3,28 +3,41 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
     Param,
     Patch,
     Post,
-    UseGuards,
+    SetMetadata,
+    Request,
+    Get,
 } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import UserService from './user.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
-@UseGuards(JwtAuthGuard)
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+
+
 @Controller('user')
 export default class UserController {
     constructor(private readonly userService: UserService) {}
 
+    @ApiBearerAuth()
     @Get(':userId')
     async finduserByID(@Param('userId') userId: number) {
         console.log(userId);
         return await this.userService.findUserByID(userId);
     }
 
+    @Get()
+    @ApiBearerAuth()
+    async finduserByAuthToken(@Request() req) {
+        return req.user
+    }
+
     @Post()
+    @Public()
+    @ApiBody({type: User})
     async createUser(@Body() user: Omit<User, 'createdAt' | 'updatedAt'>) {
         const createdUserRequest = await this.userService.createUser(user);
         if ('error' in createdUserRequest) {

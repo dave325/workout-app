@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MikroORM } from '@mikro-orm/core';
 import { INestApplication, Logger } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 async function migrateDB(app: INestApplication) {
   const orm = app.get(MikroORM);
@@ -12,9 +14,20 @@ async function migrateDB(app: INestApplication) {
   );
   await migrator.up(); // runs migration
 }
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await migrateDB(app);
+
+  const config = new DocumentBuilder()
+    .setTitle('Workout App API')
+    .setDescription('Workout App API design')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(3000);
 }
