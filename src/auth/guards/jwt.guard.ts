@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from 'src/user/user.controller';
 
-@Injectable()   
+@Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
 
     constructor(private reflector: Reflector) {
@@ -16,11 +16,22 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             context.getClass(),
         ]);
 
-        if (isPublic) {
-            // 💡 See this condition
-            return true;
+        return isPublic || this.validateUrlParam(context)
+    }
+
+    async validateUrlParam(context: ExecutionContext) {
+        const canActivate = await super.canActivate(context);
+        const request = context.switchToHttp().getRequest();
+
+        if (
+            canActivate && 
+            request.params.userId && 
+            parseInt(request.params.userId) !== request.user.id
+            ) {
+            return false;
         }
 
-        return super.canActivate(context);
+        return true;
     }
+
 }

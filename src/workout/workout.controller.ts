@@ -1,48 +1,28 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
   Param,
-  Patch,
-  Post,
-  UseGuards,
 } from '@nestjs/common';
 import WorkoutService from './workout.service';
-import { Workout } from 'src/entities/workout.entity';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { Public } from 'src/user/user.controller';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-@UseGuards(JwtAuthGuard)
 @Controller('workout')
+@ApiTags('Workout')
+@ApiBearerAuth()
 export default class WorkoutController {
   constructor(private readonly workoutService: WorkoutService) {}
+
+
   @Get()
-  async findWorkoutByUserID(userID = 2) {
-    return await this.workoutService.findWorkoutByUserId(userID);
+  @Public()
+  async findAllWorkouts() {
+    return await this.workoutService.findWorkouts();
   }
 
   @Get(':id')
   async findWorkoutByID(@Param('id') id: number) {
     return await this.workoutService.findWorkoutByID(id);
   }
-
-  @Post()
-  async createWorkout(
-    @Body() workout: Omit<Workout, 'createdAt' | 'updatedAt'>,
-  ) {
-    return await this.workoutService.createWorkout(workout);
-  }
-
-  @Patch(':id')
-  async updateWorkout(
-    @Param('id') workoutId: number,
-    @Body() workout: Pick<Workout, 'sets' | 'reps' | 'exercise'>,
-  ) {
-    return await this.workoutService.updateWorkout(workoutId, workout);
-  }
-
-  @Delete(':id')
-  async deleteWorkout(@Param('id') workoutID: number) {
-    return await this.workoutService.deletedWorkout(workoutID, 2);
-  }
 }
+

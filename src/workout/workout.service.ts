@@ -10,7 +10,16 @@ export default class WorkoutService {
     @InjectRepository(Workout)
     private readonly workoutRepository: EntityRepository<Workout>,
     private readonly em: EntityManager,
-  ) {}
+  ) { }
+
+  findWorkouts(params: {
+    limit?: number,
+    offset?: number
+  } = {}) {
+    const { limit = 50, offset = 0 } = params
+    return this.workoutRepository.findAndCount({user: null}, { limit, offset });
+
+  }
 
   findWorkoutByID(id: number) {
     return this.workoutRepository.findOne(id);
@@ -25,10 +34,16 @@ export default class WorkoutService {
     return this.em.flush();
   }
 
-  updateWorkout(
+  async updateWorkout(
     workoutID: number,
+    userId: number,
     workout: Pick<Workout, 'sets' | 'reps' | 'exercise'>,
   ) {
+    const workoutExists = await this.workoutRepository.count({id: workoutID, user: userId});
+    if(!workoutExists){
+      return undefined;
+    }
+
     return this.workoutRepository.nativeUpdate(
       { id: workoutID, deletedOn: null },
       { ...workout, updatedAt: new Date() },

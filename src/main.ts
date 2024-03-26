@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { MikroORM } from '@mikro-orm/core';
 import { INestApplication, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 async function migrateDB(app: INestApplication) {
   const orm = app.get(MikroORM);
